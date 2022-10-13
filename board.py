@@ -4,12 +4,14 @@ import numpy as np
 
 
 class Board:
+    """Board class responsible for printing and maintaining the game board
+    """
     def __init__(self, width, length) -> None:
         self.width = width
         self.length = length
-        self.board = np.zeros((width, length))
-    
-    def print_board(self):
-        
-        print(np.flip(self.board, 0))
+        self.board = np.zeros((length, width))
 
+    def print_board(self):
+        """Method responsible for printing the board into the console
+        """
+        print(np.flip(self.board, 0))
