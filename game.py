@@ -6,6 +6,7 @@ import sys
 import pygame
 from board import Board
 import constants
+from ai import ai_choose_move
 
 pygame.init()
 
@@ -52,21 +53,16 @@ def draw_board(board: Board):
                                    (int(column*SQUARESIZE+SQUARESIZE/2),
                                     board_height-int(row*SQUARESIZE+SQUARESIZE/2)),
                                    RADIUS)
-
     pygame.display.update()
 
-def play_single_player(difficulty: string):
+def play_single_player(board: Board, difficulty: string):
     """Gameplay for only one player at difficulty {difficulty}"""
     ## WILL MAKE AI
     print(f'one player on difficulty {difficulty}')
-
-def play_two_player(board: Board, player1: string, player2: string):
-    """Gameplay for two players"""
-    print(f'two players, player 1 is {player1}, player 2 is {player2}')
-
+    
     game_over = False
     turn = 0
-
+    
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -95,6 +91,63 @@ def play_two_player(board: Board, player1: string, player2: string):
                         turn = turn % 2
                         if board.is_winning_move(1):
                             print('gg red')
+                            label = myfont.render("You win!!", 1, constants.RED)
+                            screen.blit(label, (20, 10))
+                            game_over = True
+                        board.print_board()
+                        draw_board(board)
+        
+        if turn == 1 and not game_over:
+            col = ai_choose_move(board, difficulty)
+            row = board.get_next_open_row(col)
+            board.drop_piece(row, col, 2)
+            turn += 1
+            turn = turn % 2
+            if board.is_winning_move(2):
+                label = myfont.render("Player 2 wins!!", 1, constants.YELLOW)
+                screen.blit(label, (20, 10))
+                game_over = True
+            
+            board.print_board()
+            draw_board(board)
+
+        if game_over:
+            pygame.time.wait(3000)
+
+
+def play_two_player(board: Board, player1: string, player2: string):
+    """Gameplay for two players"""
+    print(f'two players, player 1 is {player1}, player 2 is {player2}')
+
+    game_over = False
+    turn = 0
+    while not game_over:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                sys.exit()
+
+            if event.type == pygame.MOUSEMOTION:
+                pygame.draw.rect(screen, constants.WHITE, (0,0, width, SQUARESIZE))
+                posx = event.pos[0]
+                if turn == 0:
+                    pygame.draw.circle(screen, constants.RED, (posx, int(SQUARESIZE/2)), RADIUS)
+                else:
+                    pygame.draw.circle(screen, constants.YELLOW, (posx, int(SQUARESIZE/2)), RADIUS)
+            pygame.display.update()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.draw.rect(screen, constants.WHITE, (0, 0, width, SQUARESIZE))
+                # Ask for Player 1 Input
+                if turn == 0:
+                    posx = event.pos[0]
+                    col = int(math.floor(posx/SQUARESIZE))
+
+                    if board.is_valid_location(col):
+                        row = board.get_next_open_row(col)
+                        board.drop_piece(row, col, 1)
+                        turn += 1
+                        turn = turn % 2
+                        if board.is_winning_move(1):
                             label = myfont.render("Player 1 wins!!", 1, constants.RED)
                             screen.blit(label, (20, 10))
                             game_over = True
@@ -110,11 +163,16 @@ def play_two_player(board: Board, player1: string, player2: string):
                         turn += 1
                         turn = turn % 2
                         if board.is_winning_move(2):
-                            print('gg yellow')
                             label = myfont.render("Player 2 wins!!", 1, constants.YELLOW)
                             screen.blit(label, (20, 10))
                             game_over = True
-
+                
+                if board.is_full():
+                    label = myfont.render("Tie Game", 1, constants.BLUE)
+                    screen.blit(label, (20, 10))
+                    game_over = True
+                    
+                
                 board.print_board()
                 draw_board(board)
 
@@ -133,7 +191,7 @@ def _play_game():
 
     if is_single_player is True:
         print("Starting single player game")
-        play_single_player(constants.DIFFICULTY)
+        play_single_player(board, constants.DIFFICULTY)
     else:
         print("Starting two player game")
         play_two_player(board, constants.PLAYER_NAMES[0], constants.PLAYER_NAMES[1])

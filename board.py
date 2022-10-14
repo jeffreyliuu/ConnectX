@@ -98,3 +98,11 @@ class Board:
                                 break
                             if i is self.connect_size - 1:
                                 return True
+               
+    def is_full(self):
+        """Determines if the board is full of pieces"""
+        for column in range(self.width):
+            if self.get_next_open_row(column) != -1:
+                return False
+
+        return True
