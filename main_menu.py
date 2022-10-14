@@ -12,13 +12,16 @@ from game import _play_game, screen
 
 pygame.init()
 pygame.display.set_caption('Connect X')
-screen = pygame.display.set_mode(constants.res)
+screen = pygame.display.set_mode(constants.res, pygame.RESIZABLE)
 
 def play_game():
     """Wrapper function for game execution"""
     main_menu.disable()
     main_menu.full_reset()
-    screen.fill((210, 21, 112))
+    width = constants.DIMENSIONS[0] * constants.SQUARE_SIZE
+    height = (constants.DIMENSIONS[1] + 1) * constants.SQUARE_SIZE
+    screen = pygame.display.set_mode((width, height))
+    screen.fill((228,230,246,255))
     _play_game()
 
 # Constants
@@ -50,7 +53,7 @@ def set_dimensions(value: Tuple[Any, int], dimension: int, dimension_type: strin
         dimension (string): type of dimension
     """
     selected, index = value
-    print(f'Setting dimension {dimension_type} {selected} at index {index}')
+    print(f'Setting dimension {dimension_type} {selected[0]} at index {index}')
     if dimension_type == 'length':
         constants.DIMENSIONS[1] = dimension
     if dimension_type == 'width':
@@ -79,31 +82,58 @@ def change_difficulty(value: Tuple[Any, int], difficulty: str) -> None:
     print(f'Selected difficulty: "{selected}" ({difficulty}) at index {index}')
     constants.DIFFICULTY = difficulty
 
-pregame_menu = pygame_menu.Menu("Select game specification", window_width, window_height, theme=DEFAULT_THEME)
-pregame_menu.add.selector("Width of Board: ", [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7), ("8", 8), ("9", 9), ("10", 10)], onchange=set_dimensions, dimension_type='width', default=4)
-pregame_menu.add.selector("Length of Board: ", [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7), ("8", 8), ("9", 9), ("10", 10)], onchange=set_dimensions, dimension_type='length', default=3)
-pregame_menu.add.selector("Number of pieces to connect: ", [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7)], onchange=set_dimensions, dimension_type='connect_size', default=1)
+pregame_menu = pygame_menu.Menu("Select game specification",
+                                window_width,
+                                window_height,
+                                theme=DEFAULT_THEME)
+pregame_menu.add.selector("Width of Board: ",
+                          [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7), ("8", 8), ("9", 9), ("10", 10)],
+                          onchange=set_dimensions,
+                          dimension_type='width',
+                          default=4)
+pregame_menu.add.selector("Length of Board: ",
+                          [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7), ("8", 8), ("9", 9), ("10", 10)],
+                          onchange=set_dimensions,
+                          dimension_type='length',
+                          default=3)
+pregame_menu.add.selector("Number of pieces to connect: ",
+                          [("3", 3), ("4", 4), ("5", 5), ("6", 6), ("7", 7)],
+                          onchange=set_dimensions,
+                          dimension_type='connect_size',
+                          default=1)
 pregame_menu.add.button('Play game', play_game)
 
 single_player_menu = pygame_menu.Menu("Single Player", window_width, window_height, theme=DEFAULT_THEME)
 single_player_menu.add.selector('Select difficulty: ',
-                                [('1 - EASY', 'EASY'),
-                                    ('2 - MEDIUM', 'MEDIUM'),
-                                    ('3 - HARD', 'HARD')], onchange=change_difficulty, selector_id='select_difficulty')
+                                [('1 - EASY', 'EASY'), ('2 - MEDIUM', 'MEDIUM'), ('3 - HARD', 'HARD')],
+                                onchange=change_difficulty,
+                                selector_id='select_difficulty')
 single_player_menu.add.button('Continue', pregame_menu)
 single_player_menu.add.button('Return to main menu', pygame_menu.events.BACK)
 single_player_decorator = single_player_menu.get_decorator()
 single_player_decorator.add_callable(set_single_player_mode, pass_args=False)
 
 two_player_menu = pygame_menu.Menu("Two Players", window_width, window_height, theme=DEFAULT_THEME)
-two_player_menu.add.text_input('Player 1: ', default=constants.PLAYER_NAMES[0], onchange=set_player_names, player_num=1, maxchar=10)
-two_player_menu.add.text_input('Player 2: ', default=constants.PLAYER_NAMES[1], onchange=set_player_names, player_num=2, maxchar=10)
+two_player_menu.add.text_input('Player 1: ',
+                               default=constants.PLAYER_NAMES[0],
+                               onchange=set_player_names,
+                               player_num=1,
+                               maxchar=10)
+two_player_menu.add.text_input('Player 2: ',
+                               default=constants.PLAYER_NAMES[1],
+                               onchange=set_player_names,
+                               player_num=2,
+                               maxchar=10)
 two_player_menu.add.button('Continue', pregame_menu)
 two_player_menu.add.button('Return to main menu', pygame_menu.events.BACK)
 two_player_decorator = two_player_menu.get_decorator()
 two_player_decorator.add_callable(set_two_player_mode, pass_args=False)
 
-main_menu = pygame_menu.Menu("Connect X", window_width, window_height, center_content=True, theme=DEFAULT_THEME)
+main_menu = pygame_menu.Menu("Connect X",
+                             window_width,
+                             window_height,
+                             center_content=True,
+                             theme=DEFAULT_THEME)
 main_menu.add.button('Single Player', single_player_menu)
 main_menu.add.button('Two Players', two_player_menu)
 main_menu.add.button('Quit', pygame_menu.events.EXIT)
@@ -117,17 +147,8 @@ while True:
     for event in events:
         if event.type == pygame.QUIT:
             exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:
-                pause_menu.enable()
-
-    if pause_menu.is_enabled():
-        pause_menu.update(events)
-        pause_menu.mainloop(screen)
 
     if main_menu.is_enabled():
-        pause_menu.disable()
         main_menu.mainloop(screen)
 
     pygame.display.update()
-    
