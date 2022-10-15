@@ -13,4 +13,6 @@ Pretty self-explanatory, not much else to say ngl
 
 ## Notes:
 Implemented using Python, Pygame, Pygame_menu
+To be added in the future: pause menu, more details in the UI when playing (highlight winning pieces, etc)
+
 
