@@ -16,7 +16,7 @@ If you have friends, you can play a local two-player mode that works exactly the
 2. Run `python3 -m main_menu.py
 3. Have fun!
 
-## Tech stack::
+## Tech stack:
 - Python
 - Pygame
 
