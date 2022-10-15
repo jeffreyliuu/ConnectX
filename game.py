@@ -59,10 +59,10 @@ def play_single_player(board: Board, difficulty: string):
     """Gameplay for only one player at difficulty {difficulty}"""
     ## WILL MAKE AI
     print(f'one player on difficulty {difficulty}')
-    
+
     game_over = False
     turn = 0
-    
+
     while not game_over:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,13 +90,12 @@ def play_single_player(board: Board, difficulty: string):
                         turn += 1
                         turn = turn % 2
                         if board.is_winning_move(1):
-                            print('gg red')
                             label = myfont.render("You win!!", 1, constants.RED)
                             screen.blit(label, (20, 10))
                             game_over = True
                         board.print_board()
                         draw_board(board)
-        
+
         if turn == 1 and not game_over:
             col = ai_choose_move(board, difficulty)
             row = board.get_next_open_row(col)
@@ -107,7 +106,7 @@ def play_single_player(board: Board, difficulty: string):
                 label = myfont.render("Player 2 wins!!", 1, constants.YELLOW)
                 screen.blit(label, (20, 10))
                 game_over = True
-            
+
             board.print_board()
             draw_board(board)
 
@@ -166,13 +165,12 @@ def play_two_player(board: Board, player1: string, player2: string):
                             label = myfont.render("Player 2 wins!!", 1, constants.YELLOW)
                             screen.blit(label, (20, 10))
                             game_over = True
-                
+
                 if board.is_full():
                     label = myfont.render("Tie Game", 1, constants.BLUE)
                     screen.blit(label, (20, 10))
                     game_over = True
-                    
-                
+
                 board.print_board()
                 draw_board(board)
 

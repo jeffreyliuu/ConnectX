@@ -15,7 +15,7 @@ class Board:
         """
         print(np.flip(self.board, 0))
 
-    def drop_piece(self, row: int, col: int, piece: int):
+    def drop_piece(self, row: int, col: int, piece: int) -> None:
         """Method that inserts a piece into coordinate (row, col)
 
         Args:
@@ -98,7 +98,7 @@ class Board:
                                 break
                             if i is self.connect_size - 1:
                                 return True
-               
+
     def is_full(self):
         """Determines if the board is full of pieces"""
         for column in range(self.width):
@@ -106,3 +106,77 @@ class Board:
                 return False
 
         return True
+
+    def get_valid_locations(self):
+        """Returns a list of all valid columns in the board
+        """
+        valid_locations = []
+        for column in range(self.width):
+            if self.is_valid_location(column):
+                valid_locations.append(column)
+        return valid_locations
+
+    def score_position(self):
+        """Determines the score if an AI drops a piece in a column given
+        the current state of the board
+
+        Returns:
+            int: score of the given column position
+        """
+        score = 0
+
+        # Pieces in center column have higher score
+        center_array = [int(i) for i in list(self.board[:, self.width //2])]
+        center_count = center_array.count(2)
+        score += center_count * 3
+
+        # Calculate score for horizontal
+        for row in range(self.length):
+            row_array = [int(i) for i in list(self.board[row, :])]
+            for column in range(self.width - (self.connect_size - 1)):
+                window = row_array[column:column + self.connect_size]
+                score += self.window_value(window)
+
+        # Calculate score for vertical
+        for column in range(self.width):
+            col_array = [int(i) for i in list(self.board[:,column])]
+            for row in range(self.length - (self.connect_size - 1)):
+                window = col_array[row: row + self.connect_size]
+                score += self.window_value(window)
+
+        # Positive value slopes
+        for row in range(self.length - (self.connect_size - 1)):
+            for column in range(self.width - (self.connect_size - 1)):
+                window = [self.board[row + i][column + i] for i in range(self.connect_size)]
+                score += self.window_value(window)
+
+        # Negative value slopes
+        for row in range(self.length - (self.connect_size - 1)):
+            for column in range(self.width - (self.connect_size - 1)):
+                window = [self.board[row + (self.connect_size - 1) - i][column + i] for i in
+                          range(self.connect_size)]
+                score += self.window_value(window)
+
+        return score
+
+    def window_value(self, window):
+        """Determines the score for a given window of the board
+
+        Args:
+            window (list(int)): array of pieces (also empty)
+
+        Returns:
+            int: score of given window
+        """
+        score = 0
+        num_pieces = window.count(2)
+        empty_pieces = window.count(0)
+
+        for test_size in range(self.connect_size):
+            if num_pieces == self.connect_size:
+                score += 100
+            if num_pieces == 0 and empty_pieces == 1:
+                score -= 1000
+            if num_pieces == (self.connect_size - test_size) and empty_pieces == test_size:
+                score += test_size + 10
+        return score
