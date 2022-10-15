@@ -2,6 +2,7 @@
 import copy
 import string
 import random
+import math
 from board import Board
 import constants
 
@@ -34,13 +35,24 @@ def medium_ai_move(board: Board):
     for col in valid_locations:
         row = board.get_next_open_row(col)
         temp_board = copy.deepcopy(board)
-        temp_board.drop_piece(row, col, 2)
+        temp_board.drop_piece(row, col, constants.AI_PIECE)
         score = temp_board.score_position()
         if score > best_score:
             best_score = score
             best_col = col
 
     return best_col
+
+def hard_ai_move(board: Board):
+    """Returns a column index based on the minimax algorithm as "HARD" difficulty
+
+    Args:
+        board (Board): current board in game
+
+    Returns:
+        int: column index
+    """
+    return board.minimax(board.connect_size + 1, -math.inf, math.inf, True)[0]
 
 def ai_choose_move(board: Board, difficulty: string):
     """Returns a specific column number determined by both the state
@@ -57,3 +69,5 @@ def ai_choose_move(board: Board, difficulty: string):
         return easy_ai_move(board)
     if difficulty == 'MEDIUM':
         return medium_ai_move(board)
+    if difficulty == 'HARD':
+        return hard_ai_move(board)

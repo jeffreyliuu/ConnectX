@@ -1,5 +1,9 @@
 """Module responsible for creating and maintaining the Connect X board"""
+import math
+import copy
+import random
 import numpy as np
+import constants
 
 class Board:
     """Board class responsible for printing and maintaining the game board
@@ -59,7 +63,6 @@ class Board:
         for column in range(column_count):
             for row in range(row_count - (self.connect_size - 1)):
                 if self.board[row][column] == piece:
-                    print(f'{row}, {column}')
                     for i in range(1, self.connect_size):
                         if self.board[row + i][column] != piece:
                             break
@@ -70,7 +73,6 @@ class Board:
         for column in range(column_count - (self.connect_size - 1)):
             for row in range(row_count):
                 if self.board[row][column] == piece:
-                    print(f'{row}, {column}')
                     for i in range(1, self.connect_size):
                         if self.board[row][column + i] != piece:
                             break
@@ -101,11 +103,7 @@ class Board:
 
     def is_full(self):
         """Determines if the board is full of pieces"""
-        for column in range(self.width):
-            if self.get_next_open_row(column) != -1:
-                return False
-
-        return True
+        return len(self.get_valid_locations()) == 0
 
     def get_valid_locations(self):
         """Returns a list of all valid columns in the board
@@ -180,3 +178,66 @@ class Board:
             if num_pieces == (self.connect_size - test_size) and empty_pieces == test_size:
                 score += test_size + 10
         return score
+
+    def is_terminal_node(self):
+        """Determines if the game is at a halting state
+
+        Returns:
+            bool: true if the game is at a halting state, false otherwise
+        """
+        return self.is_winning_move(constants.PLAYER_PIECE) or self.is_winning_move(constants.AI_PIECE) or self.is_full()
+
+    def minimax(self, depth, alpha, beta, maximizing_player: bool):
+        """Recursive algorithm that determines optimal move using minimax and alpha-beta pruning
+
+        Args:
+            depth (int): recursion depth
+            alpha (int): _description_
+            beta (int): _description_
+            maximizingPlayer (bool): determines if we are maximizing player or not
+
+        Returns:
+            int, int: first val is column index, second value is score at recursion depth
+        """
+        valid_locations = self.get_valid_locations()
+        is_terminal = self.is_terminal_node()
+        if depth == 0 or is_terminal:
+            if is_terminal:
+                if self.is_winning_move(constants.AI_PIECE):
+                    return (None, 1000000000000)
+                elif self.is_winning_move(constants.PLAYER_PIECE):
+                    return (None, -1000000000000)
+                else:
+                    return (None, 0)
+            else:
+                return (None, self.score_position())
+        if maximizing_player:
+            min_value = -math.inf
+            column = random.choice(valid_locations)
+            for col in valid_locations:
+                row = self.get_next_open_row(col)
+                temp_copy = copy.deepcopy(self)
+                temp_copy.drop_piece(row, col, constants.AI_PIECE)
+                new_score = temp_copy.minimax(depth - 1, alpha, beta, False)[1]
+                if new_score > min_value:
+                    min_value = new_score
+                    column = col
+                alpha = max(alpha, min_value)
+                if alpha >= beta:
+                    break
+            return column, min_value
+        else:
+            max_value = math.inf
+            column = random.choice(valid_locations)
+            for col in valid_locations:
+                row = self.get_next_open_row(col)
+                temp_copy = copy.deepcopy(self)
+                temp_copy.drop_piece(row, col, constants.PLAYER_PIECE)
+                new_score = temp_copy.minimax(depth - 1, alpha, beta, True)[1]
+                if new_score < max_value:
+                    max_value = new_score
+                    column = col
+                beta = min(beta, max_value)
+                if alpha >= beta:
+                    break
+            return column, max_value
